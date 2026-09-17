@@ -31,6 +31,8 @@ The templates are functional interpretations of dashboard interaction patterns. 
 4. Care Calendar, inspired by [Phenomenon Studio](https://dribbble.com/shots/27005103-Appointments-Admin-Dashboard-UI-Clinexa)
 5. Ledger Flow, inspired by [Halal Lab](https://dribbble.com/shots/23929065-Fintech-Admin-Dashboard-B2B-SaaS-UI-UX-Design)
 
+The gallery uses five distinct information architectures rather than one reskinned dashboard. Each surface has an independent navigation model, content hierarchy, visualization language, responsive reduction strategy, and light or dark treatment. See [ADR 004](docs/adr/004-distinct-template-systems.md).
+
 ## Architecture
 
 ```mermaid

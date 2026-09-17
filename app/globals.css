@@ -2,6 +2,7 @@
 @import "tw-animate-css";
 @import "../vendor/shadcn-tailwind-4.13.0.css";
 @import "./templates.css";
+@import "./template-overrides.css";
 
 @utility scrollbar-thin {
   scrollbar-width: thin;
