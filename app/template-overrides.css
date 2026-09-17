@@ -6,3 +6,81 @@
   font-size: inherit;
   gap: 0;
 }
+
+.templatepreview {
+  position: relative;
+}
+
+.previewchrome {
+  position: relative;
+  z-index: 4;
+}
+
+.preview-menu {
+  position: absolute;
+  right: 10px;
+  top: 36px;
+  width: 150px;
+  padding: 6px;
+  border: 1px solid #343940;
+  border-radius: 9px;
+  background: #171a1e;
+  box-shadow: 0 14px 30px #0007;
+}
+
+.preview-menu button {
+  display: block;
+  width: 100%;
+  padding: 8px 9px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #e6e9ee;
+  text-align: left;
+  font-size: 11px;
+}
+
+.preview-menu button:hover,
+.preview-menu button:focus-visible {
+  background: #292e35;
+}
+
+.surface-feedback {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: min(390px, calc(100% - 28px));
+  padding: 10px 11px;
+  border: 1px solid #ffffff25;
+  border-radius: 10px;
+  background: #11161eea;
+  color: #f4f7fb;
+  box-shadow: 0 14px 34px #0006;
+  font-size: 11px;
+  line-height: 1.35;
+  backdrop-filter: blur(12px);
+}
+
+.surface-feedback > svg {
+  width: 15px;
+  flex: 0 0 auto;
+  color: var(--template-accent);
+}
+
+.surface-feedback > span {
+  flex: 1;
+}
+
+.surface-feedback > button {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #ffffff12;
+  color: inherit;
+}
