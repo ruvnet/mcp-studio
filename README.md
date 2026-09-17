@@ -92,6 +92,10 @@ pnpm check
 
 This runs TypeScript validation, 16 MCP protocol and security checks, then a production build.
 
+A fresh clone builds without a Sites control plane file. In that case the build
+uses local null D1 and R2 bindings and emits a safe default hosting manifest.
+Managed Sites deployments may inject the ignored `.openai/hosting.json` file.
+
 Manual acceptance test:
 
 1. Open the Playground tab and run all five tools.
@@ -221,4 +225,3 @@ Apache License 2.0. Dribbble links are design references and attribution only. O
 * https://developers.openai.com/plugins/build/chatgpt-ui
 * https://developers.openai.com/plugins/build/api/mcp-server
 * https://modelcontextprotocol.io/extensions/apps/overview
-
