@@ -1,0 +1,8 @@
+export type TemplateId='analytics'|'commerce'|'fleet'|'clinic'|'fintech';
+export const dashboardTemplates=[
+ {id:'analytics' as const,name:'Signal Analytics',category:'Analytics',author:'HALO LAB',sourceTitle:'Logip Admin Dashboard: Analytics UX',sourceUrl:'https://dribbble.com/shots/21590789-Logip-Admin-Dashboard-Analytics-UX',accent:'#7057ff',description:'Dense KPI overview with a high contrast trend surface.'},
+ {id:'commerce' as const,name:'Order Command',category:'Commerce',author:'Shakuro',sourceTitle:'E-Commerce Admin Dashboard Design Concept',sourceUrl:'https://dribbble.com/shots/24445564-E-Commerce-Admin-Dashboard-Design-Concept',accent:'#ff735c',description:'Inventory and order operations with a focused detail rail.'},
+ {id:'fleet' as const,name:'Fleet Pulse',category:'Logistics',author:'Ronas IT',sourceTitle:'Logistics Admin Dashboard – Fleet Management',sourceUrl:'https://dribbble.com/shots/27539359-Logistics-Admin-Dashboard-Fleet-Management',accent:'#dc5f20',description:'Map led dispatch view with fleet status and delivery metrics.'},
+ {id:'clinic' as const,name:'Care Calendar',category:'Healthcare',author:'Phenomenon Studio',sourceTitle:'Appointments Admin Dashboard UI – Clinexa',sourceUrl:'https://dribbble.com/shots/27005103-Appointments-Admin-Dashboard-UI-Clinexa',accent:'#6f80df',description:'Color coded clinical schedule with contextual patient detail.'},
+ {id:'fintech' as const,name:'Ledger Flow',category:'Fintech',author:'Halal Lab',sourceTitle:'Fintech Admin Dashboard – B2B SaaS UI/UX Design',sourceUrl:'https://dribbble.com/shots/23929065-Fintech-Admin-Dashboard-B2B-SaaS-UI-UX-Design',accent:'#18a774',description:'Balance, cash flow, and merchant performance in one compact view.'},
+];

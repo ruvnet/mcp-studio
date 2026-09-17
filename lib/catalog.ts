@@ -1,0 +1,10 @@
+export const RESOURCE_URI='ui://starter/dashboard.html';
+const annotations={readOnlyHint:true,destructiveHint:false,idempotentHint:true,openWorldHint:false};
+export const toolDefinitions=[
+{name:'show_dashboard',title:'Interactive dashboard',description:'Open the starter UI with examples and an editable cost estimate.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations,_meta:{ui:{resourceUri:RESOURCE_URI},'openai/outputTemplate':RESOURCE_URI,'openai/widgetAccessible':true}},
+{name:'get_examples',title:'Browse examples',description:'Get three reusable patterns for tools, resources, and UI.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations},
+{name:'calculate_estimate',title:'Usage calculator',description:'Calculate total cost and sequential duration from your own assumptions.',inputSchema:{type:'object',properties:{requests:{type:'integer',minimum:1,maximum:1000000},latencyMs:{type:'number',minimum:0,maximum:600000},costPerRequest:{type:'number',minimum:0,maximum:1000}},required:['requests','latencyMs','costPerRequest'],additionalProperties:false},annotations},
+{name:'list_embed_templates',title:'List embed templates',description:'Return the five attributed dashboard templates available for ChatGPT MCP embeds.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations},
+{name:'open_template_builder',title:'Open template builder',description:'Open the interactive MCP embed template builder in the conversation.',inputSchema:{type:'object',properties:{template:{type:'string',enum:['analytics','commerce','fleet','clinic','fintech']},theme:{type:'string',enum:['light','dark']}},additionalProperties:false},annotations,_meta:{ui:{resourceUri:RESOURCE_URI},'openai/outputTemplate':RESOURCE_URI,'openai/widgetAccessible':true}}
+];
+export const examples=[{name:'Data tool',detail:'Return structuredContent the model can reason about.'},{name:'Render tool',detail:'Link a focused interface through a ui:// resource.'},{name:'UI action',detail:'Call a tool through the host bridge and display its result.'}];
