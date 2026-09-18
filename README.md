@@ -5,7 +5,7 @@ A generic web based ChatGPT plugin starter. The site and the embedded widget sha
 ## Routes
 
 * `/`: playground, tool schemas, resource and prompt inspectors, connection guide.
-* `/api/mcp`: stateless Streamable HTTP MCP, POST JSON-RPC. GET returns 405 because this server does not offer a standalone SSE stream.
+* `/mcp` and `/api/mcp`: Cognitum protected stateless Streamable HTTP MCP, POST JSON-RPC. GET returns 405 after authentication because this server does not offer a standalone SSE stream.
 * `/widget?mode=web`: standalone browser widget.
 * `/resource`: resource metadata and resources/read example.
 * MCP resource `ui://starter/dashboard.html`: complete bundled HTML with the standard MCP Apps bridge.
@@ -34,7 +34,7 @@ The widget uses `@modelcontextprotocol/ext-apps` for initialization, tool result
 
 ## Connect
 
-A remote MCP client must reach `/api/mcp`. A private Sites deployment uses browser access controls, not MCP OAuth: the ChatGPT MCP client cannot reuse the browser session. Intentionally publish this harmless sample for public access, or deploy the source on your own reachable Workers host and add proper MCP authentication before handling private data. Keep private Sites access until the owner chooses a different audience. In ChatGPT developer settings, register the reachable endpoint and ask to show the starter dashboard. Workspace availability varies.
+A remote MCP client connects to `/mcp` and authenticates through `https://auth.cognitum.one`. The resource server publishes RFC 9728 metadata, accepts ES256 access tokens from Cognitum, requires `mcp:read` or `mcp:invoke`, and derives the tenant only from the signed `org_id` claim. This follows the ruOS connector model: Cognitum currently mints a dynamic connector client ID as `aud`, so MCP authorization is scope bound until the authorization server supports RFC 8707 resource audiences. In ChatGPT developer settings, register the reachable endpoint and ask to show the starter dashboard. Workspace availability varies.
 
 ## Customize
 

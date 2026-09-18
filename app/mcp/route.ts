@@ -1,15 +1,17 @@
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
 import { createServer } from '@/lib/mcp-server';
+import { authorizeMcpRequest } from '@/lib/cognitum-oauth';
 const corsHeaders={
  'Access-Control-Allow-Origin':'*',
  'Access-Control-Allow-Methods':'POST, OPTIONS',
  'Access-Control-Allow-Headers':'Content-Type, Accept, Authorization, MCP-Protocol-Version, MCP-Session-Id, Last-Event-ID',
- 'Access-Control-Expose-Headers':'MCP-Session-Id',
+ 'Access-Control-Expose-Headers':'MCP-Session-Id, WWW-Authenticate',
  'Access-Control-Max-Age':'86400',
  'Vary':'Origin, Access-Control-Request-Headers',
 };
 const withCors=(response:Response)=>{const headers=new Headers(response.headers);for(const [name,value] of Object.entries(corsHeaders))headers.set(name,value);return new Response(response.body,{status:response.status,statusText:response.statusText,headers})};
 export async function POST(request:Request){
+ const authorization=await authorizeMcpRequest(request);if(authorization instanceof Response)return withCors(authorization);
  if(!request.headers.get('content-type')?.includes('application/json'))return withCors(new Response('Expected application/json',{status:415}));
  // Bound decoded bytes before parsing; no credentials or arbitrary outbound fetches.
  const reader=request.body?.getReader();if(!reader)return withCors(new Response('Missing request body',{status:400}));
@@ -20,5 +22,5 @@ export async function POST(request:Request){
  try{await server.connect(transport);const response=await transport.handleRequest(new Request(request.url,{method:'POST',headers:request.headers,body:bytes}));const body=await response.arrayBuffer();const headers=new Headers(response.headers);headers.set('Cache-Control','no-store');headers.set('X-Content-Type-Options','nosniff');return withCors(new Response(body,{status:response.status,headers}));}finally{await server.close()}
 }
 export function OPTIONS(){return new Response(null,{status:204,headers:corsHeaders})}
-export function GET(){return withCors(new Response('This stateless MCP endpoint accepts JSON-RPC POST requests. Open / for the playground or /resource for metadata.',{status:405,headers:{Allow:'POST, OPTIONS','Content-Type':'text/plain'}}))}
+export async function GET(request:Request){const authorization=await authorizeMcpRequest(request);if(authorization instanceof Response)return withCors(authorization);return withCors(new Response('This stateless MCP endpoint accepts JSON-RPC POST requests. Open / for the playground or /resource for metadata.',{status:405,headers:{Allow:'POST, OPTIONS','Content-Type':'text/plain'}}))}
 export const DELETE=GET;

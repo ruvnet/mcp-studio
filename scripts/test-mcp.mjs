@@ -8,8 +8,16 @@ const dir=await mkdtemp(tmpdir()+'/mcp-test-');
 try{
 await esbuild.build({entryPoints:['app/mcp/route.ts'],bundle:true,platform:'node',format:'esm',outfile:dir+'/route.mjs',packages:'bundle'});
 const {POST,GET,OPTIONS}=await import(pathToFileURL(dir+'/route.mjs'));
+const signingKeys=await crypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign','verify']);
+const publicJwk=await crypto.subtle.exportKey('jwk',signingKeys.publicKey);publicJwk.kid='test-key';publicJwk.alg='ES256';publicJwk.use='sig';
+globalThis.fetch=async input=>{const url=typeof input==='string'?input:input.url;if(url==='https://auth.cognitum.one/.well-known/jwks.json')return Response.json({keys:[publicJwk]});throw new Error(`Unexpected fetch: ${url}`)};
+const base64url=value=>Buffer.from(typeof value==='string'?value:JSON.stringify(value)).toString('base64url');
+async function jwt(overrides={}){const now=Math.floor(Date.now()/1000);const header=base64url({alg:'ES256',kid:'test-key',typ:'JWT'});const payload=base64url({iss:'https://auth.cognitum.one',aud:'dcr-chatgpt-connector',exp:now+900,iat:now,typ:'access',sub:'user-123',org_id:'123e4567-e89b-12d3-a456-426614174000',scope:'mcp:read mcp:invoke',...overrides});const signature=await crypto.subtle.sign({name:'ECDSA',hash:'SHA-256'},signingKeys.privateKey,Buffer.from(`${header}.${payload}`));return `${header}.${payload}.${Buffer.from(signature).toString('base64url')}`}
+const accessToken=await jwt();
 let checks=0;
-async function rpc(method,params={}){const res=await POST(new Request('https://example.test/mcp',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json, text/event-stream'},body:JSON.stringify({jsonrpc:'2.0',id:1,method,params})}));assert.equal(res.status,200);return res.json()}
+const unauthorized=await POST(new Request('https://example.test/mcp',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'}));assert.equal(unauthorized.status,401);assert.match(unauthorized.headers.get('www-authenticate')??'',/oauth-protected-resource\/mcp/);checks++;
+const insufficientToken=await jwt({scope:'profile'});const insufficient=await POST(new Request('https://example.test/mcp',{method:'POST',headers:{Authorization:`Bearer ${insufficientToken}`,'Content-Type':'application/json'},body:'{}'}));assert.equal(insufficient.status,403);assert.match(insufficient.headers.get('www-authenticate')??'',/insufficient_scope/);checks++;
+async function rpc(method,params={}){const res=await POST(new Request('https://example.test/mcp',{method:'POST',headers:{Authorization:`Bearer ${accessToken}`,'Content-Type':'application/json',Accept:'application/json, text/event-stream'},body:JSON.stringify({jsonrpc:'2.0',id:1,method,params})}));assert.equal(res.status,200);return res.json()}
 const init=await rpc('initialize',{protocolVersion:'2025-03-26',capabilities:{},clientInfo:{name:'acceptance',version:'1'}});assert.equal(init.result.serverInfo.name,'mcp-studio');checks++;
 const list=await rpc('tools/list');assert.equal(list.result.tools.length,12);assert.equal(list.result.tools.filter(t=>t._meta?.ui?.resourceUri).length,2);assert.ok(list.result.tools.find(t=>t.name==='calculate_estimate').outputSchema);checks++;
 const dash=await rpc('tools/call',{name:'show_dashboard',arguments:{}});assert.equal(dash.result.structuredContent.estimate.totalCost,2);checks++;
@@ -35,10 +43,10 @@ const toolReference=await rpc('resources/read',{uri:'mcp://studio/tool/calculate
 const completion=await rpc('completion/complete',{ref:{type:'ref/resource',uri:'mcp://studio/tool/{name}'},argument:{name:'name',value:'get_'}});assert.ok(completion.result.completion.values.includes('get_examples'));checks++;
 const prompts=await rpc('prompts/list');assert.equal(prompts.result.prompts.length,3);checks++;
 const prompt=await rpc('prompts/get',{name:'design_mcp_tool',arguments:{goal:'Build a governed search tool'}});assert.match(prompt.result.messages[0].content.text,/governed search tool/);checks++;
-const origin=await POST(new Request('https://example.test/mcp',{method:'POST',headers:{Origin:'https://chatgpt.com','Content-Type':'application/json',Accept:'application/json, text/event-stream'},body:JSON.stringify({jsonrpc:'2.0',id:1,method:'tools/list'})}));assert.equal(origin.status,200);assert.equal(origin.headers.get('access-control-allow-origin'),'*');checks++;
+const origin=await POST(new Request('https://example.test/mcp',{method:'POST',headers:{Authorization:`Bearer ${accessToken}`,Origin:'https://chatgpt.com','Content-Type':'application/json',Accept:'application/json, text/event-stream'},body:JSON.stringify({jsonrpc:'2.0',id:1,method:'tools/list'})}));assert.equal(origin.status,200);assert.equal(origin.headers.get('access-control-allow-origin'),'*');checks++;
 const preflight=OPTIONS();assert.equal(preflight.status,204);assert.match(preflight.headers.get('access-control-allow-headers')??'',/MCP-Protocol-Version/);checks++;
-const huge=await POST(new Request('https://example.test/mcp',{method:'POST',headers:{'Content-Type':'application/json'},body:'x'.repeat(32769)}));assert.equal(huge.status,413);checks++;
-const malformed=await POST(new Request('https://example.test/mcp',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json, text/event-stream'},body:'{bad'}));assert.equal(malformed.status,400);checks++;
-assert.equal(GET().status,405);checks++;
+const huge=await POST(new Request('https://example.test/mcp',{method:'POST',headers:{Authorization:`Bearer ${accessToken}`,'Content-Type':'application/json'},body:'x'.repeat(32769)}));assert.equal(huge.status,413);checks++;
+const malformed=await POST(new Request('https://example.test/mcp',{method:'POST',headers:{Authorization:`Bearer ${accessToken}`,'Content-Type':'application/json',Accept:'application/json, text/event-stream'},body:'{bad'}));assert.equal(malformed.status,400);checks++;
+const authenticatedGet=await GET(new Request('https://example.test/mcp',{headers:{Authorization:`Bearer ${accessToken}`}}));assert.equal(authenticatedGet.status,405);checks++;
 console.log(`${checks} protocol and security checks passed`);
 }finally{await rm(dir,{recursive:true,force:true})}
